@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      display: flex;
+      background: linear-gradient(to right, #e3f2fd, #f1f8e9);
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background-color: #2e7d32;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+      letter-spacing: 1px;
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      transition: background 0.3s;
+      border-left: 5px solid transparent;
+    }
+
+    .sidebar a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-left: 5px solid #fff;
+    }
+
+    .logout-btn {
+      margin-top: auto;
+      margin: 20px;
+      background-color: #c62828;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .logout-btn:hover {
+      background-color: #b71c1c;
+    }
+
+    /* Main Section */
+    .main-content {
+      flex: 1;
+      padding: 20px 40px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .top-bar h1 {
+      color: #2e7d32;
+      font-size: 1.8rem;
+    }
+
+    .date {
+      font-size: 1rem;
+      color: #555;
+    }
+
+    /* Stats Dashboard */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: 0.3s;
+      font-weight: 600;
+    }
+
+    .stat-card h3 {
+      margin-bottom: 10px;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    .stat-card p {
+      font-size: 1.8rem;
+      color: #1b5e20;
+      font-weight: bold;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    .users { border-left: 5px solid #1976D2; }
+    .tasks { border-left: 5px solid #7B1FA2; }
+    .completed { border-left: 5px solid #388E3C; }
+    .pending { border-left: 5px solid #F9A825; }
+
+    /* User Cards Grid */
+    #userList {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .user-card {
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: 0.3s;
+    }
+
+    .user-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .user-card h3 {
+      color: #1b5e20;
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+
+    .user-card p {
+      color: #444;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .assign-btn, .view-btn {
+      background-color: #2e7d32;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-right: 6px;
+    }
+
+    .assign-btn:hover, .view-btn:hover {
+      background-color: #1b5e20;
+      transform: scale(1.05);
+    }
+
+    /* Task Input Box */
+    .task-section {
+      display: none;
+      background-color: #f9fbe7;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+
+    .task-section input, .task-section textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    .task-section button {
+      background-color: #388e3c;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .task-section button:hover {
+      background-color: #2e7d32;
+    }
+
+    /* Modal Overlay */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      animation: slideUp 0.3s ease;
+    }
+
+    .modal h3 {
+      margin-bottom: 10px;
+      color: #1b5e20;
+    }
+
+    .close-btn {
+      background-color: #c62828;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      float: right;
+    }
+
+    .task-item {
+      background-color: #f1f8e9;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      border-left: 4px solid #2e7d32;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+
+    @keyframes slideUp {
+      from {transform: translateY(30px); opacity: 0;}
+      to {transform: translateY(0); opacity: 1;}
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      body { flex-direction: column; }
+      .sidebar { flex-direction: row; justify-content: space-around; width: 100%; }
+      .sidebar h2 { display: none; }
+    }
+  </style>
+</head>
+
+<body onload="loadDashboardStats(); loadAllUsers();">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>🌿 Admin Panel</h2>
+    <a href="#"><span>Dashboard</span></a>
+    <a href="#"><span>All Users</span></a>
+    <a href="#"><span>Tasks</span></a>
+    <a href="#"><span>Reports</span></a>
+    <a href="#"><span>Settings</span></a>
+    <button class="logout-btn" onclick="logoutAdmin()">Logout</button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="top-bar">
+      <h1>Welcome, Admin</h1>
+      <div class="date" id="currentDate"></div>
+    </div>
+
+    <!-- DASHBOARD STATS -->
+    <div class="stats-container" id="statsContainer">
+      <div class="stat-card users">
+        <h3>👥 Users</h3>
+        <p id="totalUsers">0</p>
+      </div>
+      <div class="stat-card tasks">
+        <h3>🧾 Total Tasks</h3>
+        <p id="totalTasks">0</p>
+      </div>
+      <div class="stat-card completed">
+        <h3>✅ Completed</h3>
+        <p id="completedTasks">0</p>
+      </div>
+      <div class="stat-card pending">
+        <h3>⏳ Pending</h3>
+        <p id="pendingTasks">0</p>
+      </div>
+    </div>
+
+    <!-- USER CARDS -->
+    <div id="userList">
+      <!-- User Cards load dynamically -->
+    </div>
+  </div>
+
+  <!-- Task Modal -->
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()">Close</button>
+      <h3>Assigned Tasks</h3>
+      <div id="taskContainer"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    document.getElementById("currentDate").innerText = new Date().toLocaleString();
+
+    // 🧾 Open modal and show tasks
+    async function viewTasks(userId) {
+      const modal = document.getElementById("taskModal");
+      const container = document.getElementById("taskContainer");
+      container.innerHTML = "<p>Loading tasks...</p>";
+      modal.style.display = "flex";
+
+      try {
+        const res = await fetch(`${BASE_URL}/tasks/${userId}`);
+        const tasks = await res.json();
+
+        if (tasks.length === 0) {
+          container.innerHTML = "<p>No tasks assigned yet.</p>";
+        } else {
+          container.innerHTML = tasks
+        .map(
+           (t, i) =>
+           `<div class='task-item' 
+            style="border-left:5px solid ${t.status === 'completed' ? 'green' : 'orange'};
+                   background:${t.status === 'completed' ? '#e8f5e9' : '#fffde7'};">
+
+        <strong>Task ${i + 1}:</strong> ${t.title}<br>
+        <small>${t.desc || "No description"}</small><br><br>
+
+        <span style="font-weight:bold; 
+                     color:${t.status === 'completed' ? 'green' : 'orange'};">
+            Status: ${t.status ? t.status.toUpperCase() : "PENDING"}
+        </span>
+      </div>`
+               )
+      .join("");
+
+        }
+      } catch (err) {
+        container.innerHTML = "<p>Error loading tasks.</p>";
+      }
+    }
+
+    function closeModal() {
+      document.getElementById("taskModal").style.display = "none";
+    }
+  </script>
+</body>
+</html>

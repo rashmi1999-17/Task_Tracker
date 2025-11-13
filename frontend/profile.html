@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Profile</title>
+  <style>
+    * {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(to right, #e3f2fd, #f1f8e9);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px;
+    }
+
+    .profile-container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 30px;
+      width: 700px;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 25px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 15px;
+    }
+
+    .profile-header img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #2e7d32;
+      margin-right: 20px;
+    }
+
+    .profile-header h2 {
+      color: #2e7d32;
+      margin-bottom: 5px;
+    }
+
+    .profile-header p {
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    .details {
+      margin-top: 20px;
+    }
+
+    .details h3 {
+      color: #1b5e20;
+      margin-bottom: 10px;
+    }
+
+    .details p {
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .task-section {
+      margin-top: 30px;
+    }
+
+    .task-card {
+      background: #f9fbe7;
+      border-left: 5px solid #2e7d32;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+
+    .task-card strong {
+      font-size: 1.05rem;
+      color: #1b5e20;
+    }
+
+    .task-card small {
+      display: block;
+      color: #555;
+      margin: 4px 0;
+    }
+
+    .task-card button {
+      background: #388e3c;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .task-card button:hover {
+      background: #2e7d32;
+    }
+
+    .status {
+      font-weight: bold;
+    }
+
+    .logout {
+      background-color: #c62828;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      float: right;
+    }
+
+    .logout:hover {
+      background-color: #b71c1c;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <button class="logout" onclick="logoutUser()">Logout</button>
+    <div class="profile-header">
+      <img id="userPhoto" src="https://via.placeholder.com/120" alt="Profile">
+      <div>
+        <h2 id="userName">User Name</h2>
+        <p id="userPhone">Phone: </p>
+        <p id="userDOB">DOB: </p>
+      </div>
+    </div>
+
+    <div class="details">
+      <h3>Profile Details</h3>
+      <p><strong>Address:</strong> <span id="userAddress"></span></p>
+      <p><strong>User ID:</strong> <span id="userId"></span></p>
+    </div>
+
+    <div class="task-section">
+      <h3>Assigned Tasks</h3>
+      <div id="taskList">Loading tasks...</div>
+    </div>
+  </div>
+
+  <script>
+    const BASE_URL = "http://127.0.0.1:5000";
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {
+      alert("Please login first!");
+      window.location.href = "home.html";
+    }
+
+    document.getElementById("userName").innerText = user.name;
+    document.getElementById("userPhone").innerText = "📞 " + user.phone;
+    document.getElementById("userDOB").innerText = "🎂 " + (user.dob || "N/A");
+    document.getElementById("userAddress").innerText = user.address || "N/A";
+    document.getElementById("userId").innerText = user.id;
+
+    // Handle profile photo
+    if (user.profile_photo && user.profile_photo !== "None") {
+      const photoPath = user.profile_photo.replace("uploads", "../backend/uploads");
+      document.getElementById("userPhoto").src = photoPath;
+    }
+
+    // Load tasks
+    async function loadTasks() {
+      try {
+        const res = await fetch(`${BASE_URL}/tasks/${user.id}`);
+        const tasks = await res.json();
+        const taskDiv = document.getElementById("taskList");
+
+        if (!Array.isArray(tasks) || tasks.length === 0) {
+          taskDiv.innerHTML = "<p>No tasks assigned yet.</p>";
+          return;
+        }
+
+        taskDiv.innerHTML = tasks
+          .map((t, i) => `
+            <div class="task-card">
+              <strong>Task ${i + 1}:</strong> ${t.title}<br>
+              <small>${t.desc || "No description"}</small>
+              <p class="status" style="color:${t.status === "completed" ? "green" : "orange"};">
+                Status: ${t.status ? t.status.toUpperCase() : "PENDING"}
+              </p>
+              ${
+                t.status !== "completed"
+                  ? `<button onclick="markCompleted(${i})">Mark Completed</button>`
+                  : ""
+              }
+            </div>
+          `)
+          .join("");
+      } catch (err) {
+        console.error(err);
+        document.getElementById("taskList").innerHTML = "<p>Error loading tasks.</p>";
+      }
+    }
+
+    // Mark task as completed
+    async function markCompleted(index) {
+      try {
+        const res = await fetch(`${BASE_URL}/complete_task`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: user.id, task_index: index })
+        });
+        const data = await res.json();
+        alert(data.message);
+        loadTasks();
+      } catch (err) {
+        alert("Error updating task.");
+      }
+    }
+
+    // Logout
+    function logoutUser() {
+      localStorage.removeItem("user");
+      window.location.href = "home.html";
+    }
+
+    // Load everything
+    loadTasks();
+  </script>
+</body>
+</html>

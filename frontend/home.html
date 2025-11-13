@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Home | Task Management System</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #e8f5e9, #e3f2fd);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .home-container {
+      text-align: center;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 25px;
+    }
+    button {
+      display: block;
+      width: 250px;
+      margin: 10px auto;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #388E3C;
+    }
+    .admin-btn {
+      background-color: #1976D2;
+    }
+    .admin-btn:hover {
+      background-color: #0D47A1;
+    }
+  </style>
+</head>
+<body>
+  <div class="home-container">
+    <h1>Welcome to Task Management Portal</h1>
+    <button onclick="goTo('index.html')">👤 User Login</button>
+    <button onclick="goTo('register.html')">📝 User Registration</button>
+    <button class="admin-btn" onclick="goTo('admin_login.html')">🧑‍💼 Admin Login</button>
+    <button class="admin-btn" onclick="goTo('admin_register.html')">🧾 Admin Registration</button>
+  </div>
+
+  <script>
+    function goTo(page) {
+      window.location.href = page;
+    }
+  </script>
+</body>
+</html>
